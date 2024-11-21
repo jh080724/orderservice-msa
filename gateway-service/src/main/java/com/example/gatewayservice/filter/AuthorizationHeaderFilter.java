@@ -30,7 +30,7 @@ public class AuthorizationHeaderFilter
     private String secretKey;
 
     private final List<String> allowUrl = Arrays.asList(
-            "/create", "/doLogin"
+            "/create", "/doLogin", "/refresh", "/prod-list"
     );
 
     public AuthorizationHeaderFilter() {
