@@ -49,13 +49,6 @@ public class SecurityConfig {
                 // 시큐리티에서 기본으로 인증, 인가 처리를 해 주는 UsernamePasswordAuthenticationFilter 전에 내 필터 add
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http
-                .exceptionHandling(exception -> {
-                    // 인증 과정에서 예외가 발생한 경우 그 예외를 핸들링 할 객체를 등록.
-                    exception.authenticationEntryPoint(customAuthenticationEntryPoint);
-                });
-
-
         return http.build();
     }
 
