@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 //@RequestMapping("/product")
@@ -88,11 +89,14 @@ public class ProductController {
     // 수량 업데이트
     @PostMapping("/updateQuantity")
     public ResponseEntity<?> updateStockQuantity(
-            @RequestParam Long prodId, @RequestParam Integer quantity) {
+            @RequestBody Map<String, String> params) {
 
-        log.info("/product/updateQuantity: POST, id:{}, quantity: {}", prodId, quantity);
+        Long productId = Long.valueOf(params.get("productId"));
+        int stockQuantity = Integer.valueOf(params.get("stockQuantity"));
 
-        productService.updateStockQuantity(prodId, quantity);
+        log.info("/product/updateQuantity: POST, id:{}, quantity: {}", productId, stockQuantity);
+
+        productService.updateStockQuantity(productId, stockQuantity);
 
         return new ResponseEntity<>(HttpStatus.OK);
 

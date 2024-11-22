@@ -40,7 +40,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> {
             auth
 //                    .requestMatchers("/user/list").hasAnyRole("ADMIN")
-                    .requestMatchers("/prod-list").permitAll()
+                    .requestMatchers("/prod-list", "/updateQuantity", "/*").permitAll()
                     .anyRequest().authenticated();
         })
                 // 커스텀 필터를 등록.
@@ -49,7 +49,5 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-
 
 }

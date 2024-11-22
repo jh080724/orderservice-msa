@@ -56,7 +56,7 @@ public class Ordering {
         // 주문 상세 내역 dto 포장이 완료되면 하나의 주문 내역 자체를 dto로 변환해서 리턴.
         return OrderingListResDto.builder()
                 .id(this.id)
-                .userEmail(this.user.getEmail())
+                .userEmail("")
                 .orderStatus(this.orderStatus)
                 .orderDetails(orderDetailDtos)
                 .build();

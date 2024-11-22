@@ -40,36 +40,36 @@ public class OrderingController {
     }
 
     // 내 주문만 볼 수 있는 myOrders
-    @GetMapping("/my-order")
-    public ResponseEntity<?> myOrder(@AuthenticationPrincipal TokenUserInfo userInfo) {
-        List<OrderingListResDto> dtos = orderingService.myOrders(userInfo);
-
-        CommonResDto resDto
-                = new CommonResDto(HttpStatus.OK, "정상 조회 완료", dtos);
-
-        return new ResponseEntity<>(resDto, HttpStatus.OK);
-    }
-
-    // 전체 주문 조회 (ADMIN만 가능한 요청)
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/list")
-    public ResponseEntity<?> list() {
-        List<OrderingListResDto> dtos = orderingService.orderList();
-        return new ResponseEntity<>(
-                new CommonResDto(HttpStatus.OK, "전체 주문 조회 완료", dtos),
-                HttpStatus.OK
-        );
-    }
-
-    // 주문 상태를 취소로 변경하는 요청 (ADMIN)
-    @PreAuthorize("hasRole('ADMIN')")
-    @PatchMapping("/{id}/cancel")
-    public ResponseEntity<?> orderCancel(@PathVariable long id) {
-        Ordering ordering = orderingService.orderCancel(id);
-        CommonResDto resDto
-                = new CommonResDto(HttpStatus.OK, "주문 취소 완료", ordering.getId());
-        return new ResponseEntity<>(resDto, HttpStatus.OK);
-    }
+//    @GetMapping("/my-order")
+//    public ResponseEntity<?> myOrder(@AuthenticationPrincipal TokenUserInfo userInfo) {
+//        List<OrderingListResDto> dtos = orderingService.myOrders(userInfo);
+//
+//        CommonResDto resDto
+//                = new CommonResDto(HttpStatus.OK, "정상 조회 완료", dtos);
+//
+//        return new ResponseEntity<>(resDto, HttpStatus.OK);
+//    }
+//
+//    // 전체 주문 조회 (ADMIN만 가능한 요청)
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @GetMapping("/list")
+//    public ResponseEntity<?> list() {
+//        List<OrderingListResDto> dtos = orderingService.orderList();
+//        return new ResponseEntity<>(
+//                new CommonResDto(HttpStatus.OK, "전체 주문 조회 완료", dtos),
+//                HttpStatus.OK
+//        );
+//    }
+//
+//    // 주문 상태를 취소로 변경하는 요청 (ADMIN)
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @PatchMapping("/{id}/cancel")
+//    public ResponseEntity<?> orderCancel(@PathVariable long id) {
+//        Ordering ordering = orderingService.orderCancel(id);
+//        CommonResDto resDto
+//                = new CommonResDto(HttpStatus.OK, "주문 취소 완료", ordering.getId());
+//        return new ResponseEntity<>(resDto, HttpStatus.OK);
+//    }
 
 
 }

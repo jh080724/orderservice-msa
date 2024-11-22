@@ -1,5 +1,7 @@
 package com.playdata.orderingservice.ordering.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.playdata.orderingservice.common.auth.TokenUserInfo;
 import com.playdata.orderingservice.common.dto.CommonResDto;
 import com.playdata.orderingservice.ordering.controller.SseController;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.Order;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -24,7 +27,9 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,11 +58,19 @@ public class OrderingService {
                 CommonResDto.class);
 
         CommonResDto commonDto = responseEntity.getBody();
-        UserResDto userResDto = (UserResDto) commonDto.getResult();
+//        UserResDto userResDto = (UserResDto) commonDto.getResult();
+//
+//        // Ordering(주문) 객체 생성
+//        Ordering ordering = Ordering.builder()
+//                .userId(userResDto.getId())
+//                .orderDetails(new ArrayList<>()) // 아직 주문 상세 들어가기 전.
+//                .build();
+        Map<String, Object> userResDto = (Map<String, Object>) commonDto.getResult();
+        int userId = (Integer) userResDto.get("id");
 
         // Ordering(주문) 객체 생성
         Ordering ordering = Ordering.builder()
-                .userId(userResDto.getId())
+                .userId(Long.valueOf(userId))
                 .orderDetails(new ArrayList<>()) // 아직 주문 상세 들어가기 전.
                 .build();
 
@@ -73,23 +86,27 @@ public class OrderingService {
                     CommonResDto.class);
 
             CommonResDto commonResDto = prodResponse.getBody();
-            ProductResDto productResDto = (ProductResDto) commonResDto.getResult();
+            Map<String, Object> productResDto = (Map<String, Object>) commonResDto.getResult();
+            int stockQuantity = (int) productResDto.get("stockQuantity");
+            int prodId = (int) productResDto.get("id");
 
             // 재고 넉넉하게 있는지 확인.
             int quantity = dto.getProductCount();
-            if (productResDto.getStockQuantity() < quantity) {
+            if (stockQuantity < quantity) {
                 throw new IllegalArgumentException("재고 부족!");
             }
 
             // 재고가 부족하지 않다면 재고 수량을 주문 수량만큼 빼 주자.
-            // product-service 재고 수량 변경을 통보
+            // product-service에게 재고 수량이 변경되었다고 알려주자.
             // 상품 id와 변경되어야 할 재고 수량을 함께 보내주자.
-            // 전체수정: PUT, 부분수정: PATCH
-            LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-            map.add("productId", String.valueOf(dto.getProductId()));
-            map.add("stockQuantity", String.valueOf(productResDto.getStockQuantity() - quantity));
+            Map<String, String> map = new HashMap<>();
+//            map.put("productId", String.valueOf(prodId));
+            map.put("productId", String.valueOf(dto.getProductId()));
+            map.put("stockQuantity", String.valueOf(stockQuantity - quantity));
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-type", "application/json");
 
-            HttpEntity<Object> httpEntity = new HttpEntity<>(map);
+            HttpEntity<Object> httpEntity = new HttpEntity<>(map, headers);
 
             // 재고수량 변경 요청 보내기
             template.exchange(PRODUCT_API + "updateQuantity",
@@ -111,7 +128,7 @@ public class OrderingService {
         Ordering save = orderingRepository.save(ordering);
 
         //관리지에게 주문이 생성되었다는 알림을 전송
-        sseController.sendOrderMessage(save);
+//        sseController.sendOrderMessage(save);
 
         return save;
 //        return orderingRepository.save(ordering);
