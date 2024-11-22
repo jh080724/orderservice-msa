@@ -8,7 +8,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import org.yaml.snakeyaml.emitter.Emitter;
 
 import java.io.IOException;
 import java.util.Map;
@@ -65,17 +64,17 @@ public class SseController {
 
     }
 
-    public void sendOrderMessage(Ordering save){
-        OrderingListResDto dto = save.fromEntity();
-
-        // 누구에게 메시지를 전달할 지 알려줘야 한다.(admin@admin.com이 반는다고 가정)
-        SseEmitter emitter = emitters.get("admin@admin.com");
-        try {
-            emitter.send(SseEmitter.event()
-                    .name("ordered")
-                    .data(dto));
-        } catch (IOException e) {
-            emitters.remove("admin@admin.com");
-        }
-    }
+//    public void sendOrderMessage(Ordering save){
+//        OrderingListResDto dto = save.fromEntity(userInfo.getEmail(), productIdToNameMap);
+//
+//        // 누구에게 메시지를 전달할 지 알려줘야 한다.(admin@admin.com이 반는다고 가정)
+//        SseEmitter emitter = emitters.get("admin@admin.com");
+//        try {
+//            emitter.send(SseEmitter.event()
+//                    .name("ordered")
+//                    .data(dto));
+//        } catch (IOException e) {
+//            emitters.remove("admin@admin.com");
+//        }
+//    }
 }

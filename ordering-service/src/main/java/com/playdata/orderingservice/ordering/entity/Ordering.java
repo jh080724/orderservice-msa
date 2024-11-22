@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @NoArgsConstructor
@@ -41,7 +42,7 @@ public class Ordering {
     private List<OrderDetail> orderDetails;
 
 
-    public OrderingListResDto fromEntity() {
+    public OrderingListResDto fromEntity(String email, Map<Long, String> productIdToNameMap) {
 
         // DB에서 조회해 온 Ordering에서 상세 내역을 확인합니다.
         List<OrderDetail> orderDetailList = this.getOrderDetails();
@@ -50,13 +51,13 @@ public class Ordering {
         // OrderDetail 엔터티를 OrderDetailDto로 변환합시다.
         // 변환한 후에는 리스트에 추가합니다.
         for (OrderDetail orderDetail : orderDetailList) {
-            orderDetailDtos.add(orderDetail.fromEntity());
+            orderDetailDtos.add(orderDetail.fromEntity(productIdToNameMap));
         }
 
         // 주문 상세 내역 dto 포장이 완료되면 하나의 주문 내역 자체를 dto로 변환해서 리턴.
         return OrderingListResDto.builder()
                 .id(this.id)
-                .userEmail("")
+                .userEmail(email)
                 .orderStatus(this.orderStatus)
                 .orderDetails(orderDetailDtos)
                 .build();

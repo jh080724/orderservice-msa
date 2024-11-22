@@ -40,15 +40,15 @@ public class OrderingController {
     }
 
     // 내 주문만 볼 수 있는 myOrders
-//    @GetMapping("/my-order")
-//    public ResponseEntity<?> myOrder(@AuthenticationPrincipal TokenUserInfo userInfo) {
-//        List<OrderingListResDto> dtos = orderingService.myOrders(userInfo);
-//
-//        CommonResDto resDto
-//                = new CommonResDto(HttpStatus.OK, "정상 조회 완료", dtos);
-//
-//        return new ResponseEntity<>(resDto, HttpStatus.OK);
-//    }
+    @GetMapping("/my-order")
+    public ResponseEntity<?> myOrder(@AuthenticationPrincipal TokenUserInfo userInfo) {
+        List<OrderingListResDto> dtos = orderingService.myOrders(userInfo);
+
+        CommonResDto resDto
+                = new CommonResDto(HttpStatus.OK, "정상 조회 완료", dtos);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
 //
 //    // 전체 주문 조회 (ADMIN만 가능한 요청)
 //    @PreAuthorize("hasRole('ADMIN')")

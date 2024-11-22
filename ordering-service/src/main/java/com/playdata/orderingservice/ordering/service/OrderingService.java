@@ -2,6 +2,8 @@ package com.playdata.orderingservice.ordering.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.playdata.orderingservice.client.ProductServiceClient;
+import com.playdata.orderingservice.client.UserServiceClient;
 import com.playdata.orderingservice.common.auth.TokenUserInfo;
 import com.playdata.orderingservice.common.dto.CommonResDto;
 import com.playdata.orderingservice.ordering.controller.SseController;
@@ -41,36 +43,22 @@ public class OrderingService {
     private final OrderingRepository orderingRepository;
     private final SseController sseController;
     private final RestTemplate template;
-
-    // 유레카에 등록된 서비스명으로 요청을 보낼 수 있게 url 틀을 만들어 둠.
-    private final String USER_API = "http://user-service/";
-    private final String PRODUCT_API = "http://product-service/";
+    private final UserServiceClient userServiceClient;  // feign client 주입됨
+    private final ProductServiceClient productServiceClient; // feign client 주입됨.
 
     public Ordering createOrdering(List<OrderingSaveReqDto> dtoList,
                                    TokenUserInfo userInfo) {
         // Ordering 객체를 생성하기 위해 회원 정보를 얻어오기.
         // 우리가 가진 유일한 정보는 토큰안에 들어 있던 이메일 뿐임.
         // 이메일을 가지고 User 정보를 조회 요청을 보내자 -> user-service
-        ResponseEntity<CommonResDto> responseEntity = template.exchange(
-                USER_API + "findByEmail?email=" + userInfo.getEmail(),
-                HttpMethod.GET,
-                null,
-                CommonResDto.class);
-
-        CommonResDto commonDto = responseEntity.getBody();
-//        UserResDto userResDto = (UserResDto) commonDto.getResult();
-//
-//        // Ordering(주문) 객체 생성
-//        Ordering ordering = Ordering.builder()
-//                .userId(userResDto.getId())
-//                .orderDetails(new ArrayList<>()) // 아직 주문 상세 들어가기 전.
-//                .build();
-        Map<String, Object> userResDto = (Map<String, Object>) commonDto.getResult();
-        int userId = (Integer) userResDto.get("id");
+        CommonResDto<UserResDto> byEmail
+                = userServiceClient.findByEmail(userInfo.getEmail());
+        UserResDto userDto = byEmail.getResult();
+        log.info("userDto: {}", userDto);
 
         // Ordering(주문) 객체 생성
         Ordering ordering = Ordering.builder()
-                .userId(Long.valueOf(userId))
+                .userId(userDto.getId())
                 .orderDetails(new ArrayList<>()) // 아직 주문 상세 들어가기 전.
                 .build();
 
@@ -79,38 +67,23 @@ public class OrderingService {
 
             // dto에는 상품 고유 id가 있으니까 그걸 활용해서
             // product 객체를 조회하자. --> product-service에게 요청해야함.
-            ResponseEntity<CommonResDto> prodResponse = template.exchange(
-                    PRODUCT_API + dto.getProductId(),
-                    HttpMethod.GET,
-                    null,
-                    CommonResDto.class);
 
-            CommonResDto commonResDto = prodResponse.getBody();
-            Map<String, Object> productResDto = (Map<String, Object>) commonResDto.getResult();
-            int stockQuantity = (int) productResDto.get("stockQuantity");
-            int prodId = (int) productResDto.get("id");
+            CommonResDto<ProductResDto> commonResDto
+                    = productServiceClient.findById(dto.getProductId());
+
+            ProductResDto prodResDto = commonResDto.getResult();
 
             // 재고 넉넉하게 있는지 확인.
             int quantity = dto.getProductCount();
-            if (stockQuantity < quantity) {
+            if (prodResDto.getStockQuantity() < quantity) {
                 throw new IllegalArgumentException("재고 부족!");
             }
 
             // 재고가 부족하지 않다면 재고 수량을 주문 수량만큼 빼 주자.
             // product-service에게 재고 수량이 변경되었다고 알려주자.
             // 상품 id와 변경되어야 할 재고 수량을 함께 보내주자.
-            Map<String, String> map = new HashMap<>();
-//            map.put("productId", String.valueOf(prodId));
-            map.put("productId", String.valueOf(dto.getProductId()));
-            map.put("stockQuantity", String.valueOf(stockQuantity - quantity));
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("Content-type", "application/json");
-
-            HttpEntity<Object> httpEntity = new HttpEntity<>(map, headers);
-
-            // 재고수량 변경 요청 보내기
-            template.exchange(PRODUCT_API + "updateQuantity",
-                    HttpMethod.POST, httpEntity, CommonResDto.class);
+            prodResDto.setStockQuantity(prodResDto.getStockQuantity() - quantity);
+            productServiceClient.updateQuantity(prodResDto);
 
             // 주문 상세 내역 엔터티를 생성
             OrderDetail orderDetail = OrderDetail.builder()
@@ -134,47 +107,56 @@ public class OrderingService {
 //        return orderingRepository.save(ordering);
     }
 
-//    public List<OrderingListResDto> myOrders(TokenUserInfo userInfo) {
-//        /*
-//         OrderingListResDto -> OrderDetailDto(static 내부 클래스)
-//         {
-//            id: 주문번호,
-//            userEmail: 주문한 사람 이메일,
-//            orderStatus: 주문 상태
-//            orderDetails: [
-//                {
-//                    id: 주문상세번호,
-//                    productName: 상품명,
-//                    count: 수량
-//                },
-//                {
-//                    id: 주문상세번호,
-//                    productName: 상품명,
-//                    count: 수량
-//                },
-//                {
-//                    id: 주문상세번호,
-//                    productName: 상품명,
-//                    count: 수량
-//                }
-//                ...
-//            ]
-//         }
-//         */
-//        String userEmail = userInfo.getEmail();
-//        User user = userRepository.findByEmail(userEmail).orElseThrow(
-//                () -> new EntityNotFoundException("User Not Found")
-//        );
-//
-//        List<Ordering> orderingList = orderingRepository.findByUser(user);
-//
-//        // Ordering 엔터티를 DTO로 변환하자. 주문 상세에 대한 변환도 필요하다!
-//        List<OrderingListResDto> dtos = orderingList.stream()
-//                .map(order -> order.fromEntity())
-//                .collect(Collectors.toList());
-//
-//        return dtos;
-//    }
+    public List<OrderingListResDto> myOrders(TokenUserInfo userInfo) {
+
+        String userEmail = userInfo.getEmail();
+
+        // feign client 이용해서 user 정보 얻어오기
+        CommonResDto<UserResDto> byEmail = userServiceClient.findByEmail(userEmail);
+        UserResDto userResDto = byEmail.getResult();
+
+        // 해당 사용자의 주문 내역 전부 가져오기.
+        List<Ordering> orderingList
+                = orderingRepository.findByUserId(userResDto.getId());
+
+        log.info("orderingList: {}", orderingList);
+
+        // 주문내역에서 모든 상품 ID 추출해야 함.
+        List<Long> productIds = orderingList.stream()  // 스트림 준비
+                // flatMap():
+                // 하나의 주문 내역에서 상세 주문 내역 리스트를 꺼낸 후 하나의 스트림으로 평탄화
+                /*
+                [
+                    Ordering 1 -> [OrderDetail1, OrderDetail2]
+                    Ordering 2 -> [OrderDetail3]
+                    Ordering 3 -> [OrderDetail4, OrderDetail5, OrderDetail6]
+                ]
+                [OrderDetail1, OrderDetail2, OrderDetail3, OrderDetail4, OrderDetail5, OrderDetail6]
+                 */
+                .flatMap(order -> order.getOrderDetails().stream())
+                .map(orderDetail -> orderDetail.getProductId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        // product-service에게 상품 정보를 달라고 요청해야함.
+        CommonResDto<List<ProductResDto>> products
+                = productServiceClient.getProducts(productIds);
+        List<ProductResDto> dtoList = products.getResult();
+
+        // product-service에게 받아온 리스트를 필요로 하는 정보(ID,상품명)로만 맵으로 매핑
+        Map<Long, String> productIdToNameMap = dtoList.stream()
+                .collect(Collectors.toMap(
+                        dto -> dto.getId(),     // key
+                        dto -> dto.getName())); // value로 매핑
+
+
+        // Ordering 엔터티를 DTO로 변환하자. 주문 상세에 대한 변환도 필요하다!
+        List<OrderingListResDto> dtos = orderingList.stream()
+                .map(order -> order.fromEntity(userInfo.getEmail(), productIdToNameMap))
+                .collect(Collectors.toList());
+
+        return dtos;
+    }
 //
 //    public List<OrderingListResDto> orderList() {
 //        List<Ordering> orderList = orderingRepository.findAll();

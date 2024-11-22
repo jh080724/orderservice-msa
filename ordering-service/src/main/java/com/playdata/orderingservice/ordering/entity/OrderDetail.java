@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,10 +33,11 @@ public class OrderDetail {
 
     // 엔터티를 dto로 변환하는 메서드
     // 내부 클래스이기 때문에 OrderingListResDto 이름으로 참조하는 모습.
-    public OrderingListResDto.OrderDetailDto fromEntity() {
+    public OrderingListResDto.OrderDetailDto fromEntity(Map<Long, String> productIdToNameMap) {
+        String productName = productIdToNameMap.get(productId);
         return OrderingListResDto.OrderDetailDto.builder()
                 .id(id)
-//                .productName(product.getName())
+                .productName(productName)
                 .count(quantity)
                 .build();
     }

@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface OrderingRepository extends JpaRepository<Ordering, Long> {
 
+//    @Query("SELECT o FROM Ordering o WHERE o.userId = ?1")
+    List<Ordering> findByUserId(Long userId);
 
 }
 
