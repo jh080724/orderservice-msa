@@ -35,7 +35,7 @@ public class Product extends BaseTimeEntity {
 
     // 재고 수량 setter 직접 작성
     public void updateStockQuantity(Integer stockQuantity) {
-        this.stockQuantity = this.stockQuantity - stockQuantity;
+        this.stockQuantity = stockQuantity;
     }
 
 

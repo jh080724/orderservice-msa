@@ -1,7 +1,6 @@
 package com.playdata.orderingservice.ordering.entity;
 
 import com.playdata.orderingservice.ordering.dto.OrderingListResDto;
-import com.playdata.orderingservice.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,9 +21,8 @@ public class OrderDetail {
 
     private int quantity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn
+    private Long productId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordering_id")
@@ -36,7 +34,7 @@ public class OrderDetail {
     public OrderingListResDto.OrderDetailDto fromEntity() {
         return OrderingListResDto.OrderDetailDto.builder()
                 .id(id)
-                .productName(product.getName())
+//                .productName(product.getName())
                 .count(quantity)
                 .build();
     }

@@ -1,5 +1,6 @@
 package com.playdata.orderingservice.common.configs;
 
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -15,6 +16,7 @@ public class WebConfig {
     }
 
     @Bean
+    @LoadBalanced   // Eureka에 등록된 서비스명을 사용해서, 내부 서비스를 호출할 수 있게 해주는 어노테이션
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }

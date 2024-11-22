@@ -72,6 +72,29 @@ public class ProductController {
                 = new CommonResDto(HttpStatus.OK, "삭제 완료", null);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    // 단일상품 조회
+    @GetMapping("/{prodId}")
+    public ResponseEntity<?> productInfo(@PathVariable Long prodId) {
+        log.info("/product/{}: GET!", prodId);
+        ProductResDto productInfo = productService.getProductInfo(prodId);
+        CommonResDto resDto
+                = new CommonResDto(HttpStatus.OK, "단일상품조회완료", productInfo);
+
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    // 수량 업데이트
+    @PostMapping("/updateQuantity")
+    public ResponseEntity<?> updateStockQuantity(
+            @RequestParam Long prodId, @RequestParam Integer quantity) {
+
+        log.info("/product/updateQuantity: POST, id:{}, quantity: {}", prodId, quantity);
+
+        productService.updateStockQuantity(prodId, quantity);
+
+        return new ResponseEntity<>(HttpStatus.OK);
 
     }
 
