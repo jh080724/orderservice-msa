@@ -153,7 +153,16 @@ public class UserController {
 
     }
 
+    // order-service(userIds) -> user-service
+    @PostMapping("/users/email")
+    public ResponseEntity<?> userEmail(@RequestBody List<Long> userIds){
+        log.info("/user/email: POST, userIds: {}", userIds);
+        List<UserResDto> usersByIds = userService.getUsersByIds(userIds);
+        CommonResDto resDto
+                = new CommonResDto(HttpStatus.OK, "User들 조회 완료", usersByIds);
 
+        return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
 }
 
 
