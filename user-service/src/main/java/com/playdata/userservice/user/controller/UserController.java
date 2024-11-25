@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,7 @@ public class UserController {
 
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final Environment env;
 
     @Qualifier("user-template") // RedisTemplate이 여러 개 빈 등록되었을 경우 명시한다.
     private final RedisTemplate<String, Object> redisTemplate;
@@ -162,6 +164,17 @@ public class UserController {
                 = new CommonResDto(HttpStatus.OK, "User들 조회 완료", usersByIds);
 
         return new ResponseEntity<>(resDto, HttpStatus.OK);
+    }
+
+    @GetMapping("/health-check")
+    public String healthCheck() {
+        return String.format("It's Working in User Service"
+                + ", port(local.server.port)=" + env.getProperty("local.server.port")
+                + ", port(server.port)=" + env.getProperty("server.port")
+                + ", gateway ip=" + env.getProperty("gateway.ip")
+                + ", token secret=" + env.getProperty("token.secret")
+                + ", token expiration time=" + env.getProperty("token.expiration_time"));
+
     }
 }
 
