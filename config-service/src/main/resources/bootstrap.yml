@@ -1,0 +1,6 @@
+encrypt:
+  key-store:
+    location: file:///C:/develop/keystore/apiEncryptionKey.jks
+    password: abc1234
+    alias: apiEncryptionKey
+#  key: eocldzl1233456789eocldzl # 대칭키 설정

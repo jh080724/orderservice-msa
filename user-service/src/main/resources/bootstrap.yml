@@ -2,7 +2,7 @@
 spring:
   cloud:
     config:
-      uri: http://localhost:8888
-      name: orderservice  # config-server의
-  profiles:
-    active: dev
+      uri: http://localhost:8888  # Config-server 주소
+      name: user-service  # config-server 의  yml 파일명
+#  profiles:
+#    active: dev
