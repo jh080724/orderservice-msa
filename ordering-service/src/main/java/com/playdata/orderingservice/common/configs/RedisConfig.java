@@ -8,6 +8,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -52,8 +53,41 @@ public class RedisConfig {
         return template;
     }
 
+    @Bean
+    @Qualifier("sse-redis-factory")
+    public RedisConnectionFactory sseFactory() {
+        RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
+        configuration.setHostName(host);
+        configuration.setPort(port);
+        configuration.setDatabase(2); // 2번 DB를 사용하겠다. default -> 0
+        return new LettuceConnectionFactory(configuration);
+    }
 
+    @Bean
+    @Qualifier("sse-template")
+    public RedisTemplate<String, Object> sseRedisTemplate(
+            @Qualifier("sse-redis-factory") RedisConnectionFactory factory) {
 
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
+        // Redis의 키를 문자열로 직렬화 시키겠다.
+        template.setKeySerializer(new StringRedisSerializer());
+        // value는 JSON으로 직렬화 시키겠다.
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        template.setConnectionFactory(factory);
+
+        return template;
+    }
+
+    @Bean
+    @Qualifier("sse-listener")
+    // Redis pub/sub 메시지를 비동기로 수신하고 처리하는 컨테이너
+    public RedisMessageListenerContainer redisMessageListenerContainer(
+            @Qualifier("sse-redis-factory") RedisConnectionFactory factory
+    ){
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(factory);
+        return container;
+    }
 }
 
 

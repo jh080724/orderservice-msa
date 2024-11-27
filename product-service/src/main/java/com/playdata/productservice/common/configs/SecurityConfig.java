@@ -30,7 +30,7 @@ public class SecurityConfig {
         // CSRF(Cross Site Request Forgery) 사이트 간 요청 위조
         http.csrf(csrfConfig -> csrfConfig.disable());
 
-        http.cors(Customizer.withDefaults()); // 직접 커스텀한 CORS 설정을 적용하겠다.
+//        http.cors(Customizer.withDefaults()); // 직접 커스텀한 CORS 설정을 적용하겠다.
 
         // 세션 관리 상태를 사용하지 않고
         // STATELESS한 토큰을 사용하겠다.

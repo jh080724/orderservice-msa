@@ -105,7 +105,7 @@ public class OrderingService {
         Ordering save = orderingRepository.save(ordering);
 
         //관리지에게 주문이 생성되었다는 알림을 전송
-//        sseController.sendOrderMessage(save);
+        sseController.sendOrderMessage(userDto);
 
         return save;
 //        return orderingRepository.save(ordering);
