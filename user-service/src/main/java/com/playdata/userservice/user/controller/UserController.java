@@ -144,7 +144,7 @@ public class UserController {
 
     // order-service(email) -> user-service
     @GetMapping("/findByEmail")
-    public ResponseEntity<?> findByEmail(@RequestParam("email") String email) {
+    public ResponseEntity<?> findByEmail(@RequestParam String email) {
         log.info("/user/findByEmail: GET!!, email: {}", email);
         UserResDto resDto = userService.findByEmail(email);
 
@@ -154,6 +154,8 @@ public class UserController {
         return new ResponseEntity<>(commonDto, HttpStatus.OK);
 
     }
+
+
 
     // order-service(userIds) -> user-service
     @PostMapping("/users/email")

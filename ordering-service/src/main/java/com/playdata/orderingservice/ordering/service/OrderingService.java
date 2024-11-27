@@ -20,10 +20,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.Order;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreaker;
+import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -43,8 +42,13 @@ public class OrderingService {
     private final OrderingRepository orderingRepository;
     private final SseController sseController;
     private final RestTemplate template;
+
+    // feign client 구현체 주입 받기
     private final UserServiceClient userServiceClient;  // feign client 주입됨
     private final ProductServiceClient productServiceClient; // feign client 주입됨.
+
+    // CircuitBreaker 주입 받기
+    private final CircuitBreakerFactory circuitBreakerFactory;
 
     public Ordering createOrdering(List<OrderingSaveReqDto> dtoList,
                                    TokenUserInfo userInfo) {
@@ -111,8 +115,24 @@ public class OrderingService {
 
         String userEmail = userInfo.getEmail();
 
+        log.info("================>>>>> userEmail: {}", userEmail);
         // feign client 이용해서 user 정보 얻어오기
-        CommonResDto<UserResDto> byEmail = userServiceClient.findByEmail(userEmail);
+//        CommonResDto<UserResDto> byEmail = userServiceClient.findByEmail(userEmail);
+
+        // CircuitBreaker 생성
+        CircuitBreaker circuitBreaker
+                = circuitBreakerFactory.create("circuitBreaker1");
+
+        // userServiceClient.findByEmail(userEmail)를 circuitBreaker 로 감싸서 감시
+        CommonResDto<UserResDto> byEmail
+                = circuitBreaker.run(
+                () -> userServiceClient.findByEmail(userEmail), // 수행내역
+                throwable -> null); // 실패시 수행
+
+        if(byEmail == null){
+            log.error("==============>>>>>> byEmail is null!");
+        }
+
         UserResDto userResDto = byEmail.getResult();
 
         // 해당 사용자의 주문 내역 전부 가져오기.
@@ -125,8 +145,14 @@ public class OrderingService {
         List<Long> productIds = getProductIds(orderingList);
 
         // product-service에게 상품 정보를 달라고 요청해야함.
-        CommonResDto<List<ProductResDto>> products
-                = productServiceClient.getProducts(productIds);
+//        CommonResDto<List<ProductResDto>> products
+//                = productServiceClient.getProducts(productIds);
+
+        CommonResDto<List<ProductResDto>> products = circuitBreaker.run(
+                () -> productServiceClient.getProducts(productIds),
+                throwable -> new CommonResDto<>(HttpStatus.OK, "Product-Server Error", new ArrayList<>())
+        );
+
         List<ProductResDto> dtoList = products.getResult();
 
         // product-service에게 받아온 리스트를 필요로 하는 정보(ID,상품명)로만 맵으로 매핑

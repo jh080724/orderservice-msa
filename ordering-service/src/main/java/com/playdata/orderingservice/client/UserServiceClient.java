@@ -14,7 +14,7 @@ import java.util.List;
 public interface UserServiceClient {
 
     // 바디가 없는 추상 메서드 작성
-    @GetMapping("/findByEmails")
+    @GetMapping("/findByEmail")
     CommonResDto<UserResDto> findByEmail(@RequestParam String email);
 
     @PostMapping("/users/email")

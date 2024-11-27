@@ -42,8 +42,11 @@ public class OrderingController {
     // 내 주문만 볼 수 있는 myOrders
     @GetMapping("/my-order")
     public ResponseEntity<?> myOrder(@AuthenticationPrincipal TokenUserInfo userInfo) {
+        log.info("===========>>>>>>> userInfo : {}", userInfo);
+
         List<OrderingListResDto> dtos = orderingService.myOrders(userInfo);
 
+        log.info("===========>>>>>>> dtos: {}", dtos.toString());
         CommonResDto resDto
                 = new CommonResDto(HttpStatus.OK, "정상 조회 완료", dtos);
 
