@@ -104,7 +104,7 @@ public class OrderingService {
         // Ordering 객체를 save하면 내부에 있는 detail 리스트도 함께 INSERT가 진행이 된다.
         Ordering save = orderingRepository.save(ordering);
 
-        //관리지에게 주문이 생성되었다는 알림을 전송
+        //관리자에게 주문이 생성되었다는 알림을 전송
         sseController.sendOrderMessage(userDto);
 
         return save;

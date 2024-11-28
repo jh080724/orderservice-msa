@@ -57,7 +57,7 @@ public class AuthorizationHeaderFilter
             // 토큰이 필요한 요청은 Header에 Authorization이라는 이름으로 Bearer ....가 전달됨.
             String authorizationHeader
                     = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            if(authorizationHeader == null && !authorizationHeader.startsWith("Bearer ")) {
+            if(authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
                 // 토큰이 존재하지 않거나, Bearer로 시작하지 않는다면
                 // 공통 에러 처리 onError() 만들어서 처리...
                 return onError(exchange, "Authorization header is missing or invalid", HttpStatus.UNAUTHORIZED);
