@@ -8,7 +8,7 @@ pipeline {
     environment {
         REGION = "ap-northeast-2"
         ECR_URL = "124355678220.dkr.ecr.ap-northeast-2.amazonaws.com"
-        SERVICE_DIRS = ['config-service', 'discovery-service', 'gateway-service', 'user-service', 'order-service', 'product-service']
+        SERVICE_DIRS = "config-service,discovery-service,gateway-service,user-service,order-service,product-service"
     }
     stages {
         stage('Pull Codes from Github'){ // 스테이지 제목 (맘대로 써도 됨.)
@@ -29,6 +29,7 @@ pipeline {
                  script {
                     // withAWS를 통해 리전과 계정의 access, secret 키를 가져옴.
                     withAWS(region: "${REGION}", credentials: "aws-key") {
+                        def serviceDirs = env.SERVICE_DIRS.split(",")
                         SERVICE_DIRS.each { service ->
                             // AWS에 접속해서 ECR을 사용해야 하는데, 젠킨스에는 aws-cli를 설치하지 않았어요.
                             // aws-cli 없이도 접속을 할 수 있게 도와주는 라이브러리 설치.
