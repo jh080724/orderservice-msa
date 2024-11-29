@@ -18,10 +18,18 @@ pipeline {
         }
         stage('Build Codes by Gradle') {
             steps {
-                sh """
-                ./gradlew clean build
-                ls -al ./build/libs
-                """
+                script {
+                    def serviceDirs = env.SERVICE_DIRS.split(",")
+                    serviceDirs.each { service ->
+                        sh """
+                        echo "Building ${service}"
+                        cd ${service}
+                        ./gradlew clean build
+                        ls -al ./build/libs
+                        cd ..
+                        """
+                    }
+                }
             }
         }
         stage('Build Docker Image & Push to AWS ECR') {
@@ -30,7 +38,7 @@ pipeline {
                     // withAWS를 통해 리전과 계정의 access, secret 키를 가져옴.
                     withAWS(region: "${REGION}", credentials: "aws-key") {
                         def serviceDirs = env.SERVICE_DIRS.split(",")
-                        SERVICE_DIRS.each { service ->
+                        serviceDirs.each { service ->
                             // AWS에 접속해서 ECR을 사용해야 하는데, 젠킨스에는 aws-cli를 설치하지 않았어요.
                             // aws-cli 없이도 접속을 할 수 있게 도와주는 라이브러리 설치.
                             // helper가 여러분들 대신 aws에 로그인을 진행. 그리고 그 인증 정보를 json으로 만들어서
