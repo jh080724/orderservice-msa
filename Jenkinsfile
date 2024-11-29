@@ -8,7 +8,7 @@ pipeline {
     environment {
         REGION = "ap-northeast-2"
         ECR_URL = "124355678220.dkr.ecr.ap-northeast-2.amazonaws.com"
-        SERVICE_DIRS = "config-service,discovery-service,gateway-service,user-service,order-service,product-service"
+        SERVICE_DIRS = "config-service,discoveryservice,gateway-service,user-service,ordering-service,product-service"
     }
     stages {
         stage('Pull Codes from Github'){ // 스테이지 제목 (맘대로 써도 됨.)
@@ -24,6 +24,7 @@ pipeline {
                         sh """
                         echo "Building ${service}"
                         cd ${service}
+                        chmod +x ./gradlew
                         ./gradlew clean build
                         ls -al ./build/libs
                         cd ..

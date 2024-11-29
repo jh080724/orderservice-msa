@@ -10,7 +10,7 @@ services:
     restart: always # 인스턴스 시작하면 컨테이너도 실행 설정
 
   discovery-service:
-    image: 124355678220.dkr.ecr.ap-northeast-2.amazonaws.com/discovery-service:latest
+    image: 124355678220.dkr.ecr.ap-northeast-2.amazonaws.com/discoveryservice:latest
     container_name: discovery-service
     ports:
       - "8761:8761"
@@ -41,7 +41,7 @@ services:
     restart: always
 
   order-service:
-    image: 124355678220.dkr.ecr.ap-northeast-2.amazonaws.com/order-service:latest
+    image: 124355678220.dkr.ecr.ap-northeast-2.amazonaws.com/ordering-service:latest
     container_name: order-service
     networks:
       - msa-network
