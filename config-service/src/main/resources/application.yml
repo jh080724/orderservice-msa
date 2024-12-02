@@ -1,0 +1,41 @@
+server:
+  port: 8888
+
+spring:
+  #  profiles:
+  #    active: native
+  application:
+    name: config-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  # config setting
+  cloud:
+    config:
+      server:
+        #        native:  # native는 로컬에 설정을 두는 구성
+        #          search-locations: file:///C:/develop/git-local-repo
+        git:
+          # 호스트 키는 SSH 프로토콜을 통해 git 저장소에 접근할 대 git 서버의 신뢰성을 검증하기 위한
+          # 호스트 키를 제공해야 한다.
+          uri: git@github.com:jh080724/cloud-config-settings.git  # private Repo.
+          # uri: https://github.com/jh080724/cloud-config-settings.git # public Repo.
+          # uri: file:///c:/develop/git-local-repo # local Repo.
+          default-label: main
+          host-key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk="
+          host-key-algorithm: "ssh-rsa"
+          private-key: |
+            ${GIT_PRIVATE_KEY}
+
+#Actuator 설정
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health, beans, busrefresh
