@@ -5,6 +5,17 @@ services:
     container_name: config-service
     ports:
       - "8888:8888"
+    env_file:
+      - .env
+    environment:
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://43.203.196.78:8888/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 60s     # 첫 테스트 시행 시점, 컨테이너 가동 후 60초 후에 진행하라.
     networks:
       - msa-network
     restart: always # 인스턴스 시작하면 컨테이너도 실행 설정
@@ -14,6 +25,12 @@ services:
     container_name: discovery-service
     ports:
       - "8761:8761"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://43.203.196.78:8761" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 60s     # 첫 테스트 시행 시점, 컨테이너 가동 후 60초 후에 진행하라.
     networks:
       - msa-network
     restart: always
@@ -26,8 +43,10 @@ services:
     networks:
       - msa-network
     depends_on:
-      - discovery-service
-      - config-service
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
     restart: always
 
   user-service:
@@ -36,8 +55,10 @@ services:
     networks:
       - msa-network
     depends_on:
-      - discovery-service
-      - config-service
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
     restart: always
 
   order-service:
@@ -46,8 +67,10 @@ services:
     networks:
       - msa-network
     depends_on:
-      - discovery-service
-      - config-service
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
     restart: always
 
   product-service:
@@ -56,14 +79,30 @@ services:
     networks:
       - msa-network
     depends_on:
-      - discovery-service
-      - config-service
+      discovery-service:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
     restart: always
 
   redis:
     image: redis:latest
     ports:
       - '6379:6379'
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672" # AMQP 포트
+      - "15672:15672" # 관리 UI 포트
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - msa-network
+    volumes:
+      - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
 
 networks:
   msa-network:
