@@ -16,9 +16,6 @@ import reactor.core.publisher.Mono;
 @RefreshScope
 public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Config> {
 
-    @Value("${token.secret}")
-    private String tokenSecret;
-
     // Filter가 빈으로 등록될 때부모 클래스의 생성자로
     // 이미 정적(static)으로 세팅된 특정 설정값을 전달
     public GlobalFilter() {
@@ -40,7 +37,6 @@ public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Conf
             ServerHttpResponse response = exchange.getResponse();
 
             log.info("GLOBAL filter active! baseMessage = {}", config.getBaseMessage());
-            log.info("tokenSecret = {}", tokenSecret);
             if(config.isPostLogger()){
                 log.info("GLOBAL filter Calles!!! Request URI: {}", request.getURI());
             }
