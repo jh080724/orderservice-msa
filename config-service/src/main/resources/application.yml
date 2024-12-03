@@ -6,13 +6,6 @@ spring:
   #    active: native
   application:
     name: config-service
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-
-  # config setting
   cloud:
     config:
       server:
@@ -29,13 +22,3 @@ spring:
           host-key-algorithm: "ssh-rsa"
           private-key: |
             ${GIT_PRIVATE_KEY}
-
-#Actuator 설정
-management:
-  endpoint:
-    health:
-      show-details: always
-  endpoints:
-    web:
-      exposure:
-        include: refresh, health, beans, busrefresh

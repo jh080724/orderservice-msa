@@ -4,3 +4,10 @@ encrypt:
     password: abc1234
     alias: apiEncryptionKey
 #  key: eocldzl1233456789eocldzl # 대칭키 설정
+
+# application.yml 보다 우선순위가 높은 설정 파일과 읽을 설정 파일 등록
+spring:
+  cloud:
+    config:
+      uri: http://config-service:8888
+      profile: default
