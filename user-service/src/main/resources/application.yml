@@ -8,6 +8,3 @@ jasypt:
 spring:
   application:
     name: user-service
-
-temp:
-  message: hellojava!
