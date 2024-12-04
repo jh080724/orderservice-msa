@@ -10,7 +10,7 @@ spring:
         cors-configurations:
           "[/**]": # 모든 경로에 대한 CORS 설정 의미
             allowed-origins:
-              - "http://localhost:3000"
+              - "http://separan.shop:3000"
             allowed-methods:
               - GET
               - POST
