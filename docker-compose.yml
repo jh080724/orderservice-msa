@@ -11,7 +11,7 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://52.78.66.41:8888/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://13.124.67.244:8888/actuator/health" ]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -26,7 +26,7 @@ services:
     ports:
       - "8761:8761"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://52.78.66.41:8761" ]
+      test: [ "CMD", "curl", "-f", "http://13.124.67.244:8761" ]
       interval: 15s
       timeout: 5s
       retries: 3
